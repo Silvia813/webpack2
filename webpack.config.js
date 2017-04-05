@@ -7,18 +7,19 @@ module.exports = (env) => {
   const mode = (env && env.mode) || "dev"
 
   let options = {
-    devtool: "source-map",
-    context: path.resolve(__dirname, './src'),
+    devtool: mode == "production" ? undefined : "source-map",
+    context: path.resolve('src'),
     entry: "./main.js",
     //string | [string] | object { <key>: string | [string] } | (function: () => string | [string] | object { <key>: string | [string] })
     output: {
-      path: path.resolve(__dirname, 'build'),
-      filename: 'bundle.js',
+      path: path.resolve('build'),
+      filename: mode === "production" ? 'bundle.[chunkhash:4].js' : "bundle.js",
       publicPath: "" //为应用程序中的所有资源指定基本路径, 确保 publicPath 总是以斜杠(/)开头和结尾。
       // 你的包现在可以通过 http://localhost:8080/build/bundle.js 访问。
     },
     devServer: {
-      contentBase: path.resolve(__dirname,"./src"),   //告诉服务器从哪里提供内容。只有当您要提供静态文件时，才需要这样做
+      contentBase: path.resolve("src"),   //告诉服务器从哪里提供内容。只有当您要提供静态文件时，才需要这样做
+      // hot: true,
       // clientLogLevel: "none" //控制台将始终显示捆绑包错误和警告。此选项仅影响其前的消息
     },
 
@@ -29,7 +30,7 @@ module.exports = (env) => {
           use: [
             {loader: 'babel-loader'}
           ],
-          include: [path.resolve("./src")]
+          include: [path.resolve("src")]
         },
         {
           test: /.less$/,
@@ -41,7 +42,9 @@ module.exports = (env) => {
                 loader:"css-loader",
                 options:{
                   modules: true,
-                  localIdentName: "[name]-[local]-[hash:base64:3]"
+                  localIdentName: "[name]-[local]-[hash:base64:3]",
+                  minimize: true,
+                  sourceMap: false
                 }
               },
               "less-loader",
@@ -54,7 +57,7 @@ module.exports = (env) => {
                 loader: "css-loader",
                 options: {
                   modules: true,
-                  localIdentName: "[name]-[local]-[hash:base64:3]"
+                  localIdentName: "[name]-[local]-[hash:base64:3]",
                 }
               },
               "less-loader",
@@ -71,7 +74,9 @@ module.exports = (env) => {
                 loader:"css-loader",
                 options:{
                   modules: true,
-                  localIdentName: "[name]-[local]-[hash:base64:3]"
+                  localIdentName: "[name]-[local]-[hash:base64:3]",
+                  minimize: true,
+                  sourceMap: false
                 }
               },
               "postcss-loader",
@@ -96,6 +101,12 @@ module.exports = (env) => {
               loader: "url-loader",
               options: {
                 name: "images/[name].[ext]",
+                limit: 10000,
+                /*
+                *  limit=10000 ： 10kb
+                *  图片大小小于10kb 采用内联的形式，否则输出图片.
+                *  于临界值的时候，字体或者图片文件会以base64的形式在html引用，否则则是以资源路径的形式引用。
+                * */
               }
             }
           ]
@@ -107,6 +118,7 @@ module.exports = (env) => {
               loader: "url-loader",
               options: {
                 name: "fonts/[name].[ext]",
+                limit: 5000,
               }
             }
           ]
@@ -119,7 +131,7 @@ module.exports = (env) => {
 
     plugins: [
       new HtmlWebpackPlugin({
-        template: __dirname + "/src/index.html"
+        template: "index.html"
       }),
     ]
 
@@ -133,8 +145,12 @@ module.exports = (env) => {
         }
       }),
       new ExtractTextPlugin({
-        filename: "css/[name].[contenthash:4].css",
-        allChunks: true,
+        filename: "[name].[contenthash:4].css",
+        allChunks: true
+      }),
+      new webpack.DefinePlugin({
+        "process.env.NODE_ENV": JSON.stringify("production"),
+        __DEBUG__: false,
       }),
     ])
   }
