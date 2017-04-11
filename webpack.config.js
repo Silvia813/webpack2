@@ -9,7 +9,19 @@ module.exports = (env) => {
   let options = {
     devtool: mode == "production" ? undefined : "source-map",
     context: path.resolve('src'),
-    entry: "./main.js",
+    entry: [
+      'react-hot-loader/patch',
+      // activate HMR for React
+
+      'webpack-dev-server/client?http://localhost:8080',
+      // bundle the client for webpack-dev-server
+      // and connect to the provided endpoint
+
+      'webpack/hot/only-dev-server',
+      // bundle the client for hot reloading
+      // only- means to only hot reload for successful updates
+      "./main.js"
+    ],
     //string | [string] | object { <key>: string | [string] } | (function: () => string | [string] | object { <key>: string | [string] })
     output: {
       path: path.resolve('build'),
@@ -19,7 +31,7 @@ module.exports = (env) => {
     },
     devServer: {
       contentBase: path.resolve("src"),   //告诉服务器从哪里提供内容。只有当您要提供静态文件时，才需要这样做
-      // hot: true,
+      hot: true,
       // clientLogLevel: "none" //控制台将始终显示捆绑包错误和警告。此选项仅影响其前的消息
     },
 
@@ -152,6 +164,10 @@ module.exports = (env) => {
         "process.env.NODE_ENV": JSON.stringify("production"),
         __DEBUG__: false,
       }),
+    ])
+  }else{
+    options.plugins = options.plugins.concat([
+      new webpack.HotModuleReplacementPlugin(),
     ])
   }
   return options
