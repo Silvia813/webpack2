@@ -2,6 +2,7 @@ const webpack = require("webpack")
 const path = require("path")
 const HtmlWebpackPlugin = require("html-webpack-plugin")
 const ExtractTextPlugin = require("extract-text-webpack-plugin")
+const OpenBrowserPlugin = require('open-browser-webpack-plugin')
 
 module.exports = (env) => {
   const mode = (env && env.mode) || "dev"
@@ -10,16 +11,6 @@ module.exports = (env) => {
     devtool: mode == "production" ? undefined : "source-map",
     context: path.resolve('src'),
     entry: [
-      'react-hot-loader/patch',
-      // activate HMR for React
-
-      'webpack-dev-server/client?http://localhost:8080',
-      // bundle the client for webpack-dev-server
-      // and connect to the provided endpoint
-
-      'webpack/hot/only-dev-server',
-      // bundle the client for hot reloading
-      // only- means to only hot reload for successful updates
       "./main.js"
     ],
     //string | [string] | object { <key>: string | [string] } | (function: () => string | [string] | object { <key>: string | [string] })
@@ -141,7 +132,7 @@ module.exports = (env) => {
       ],
     },
 
-    plugins: [
+    plugins: [ //生产 开发环境都需要的插件
       new HtmlWebpackPlugin({
         template: "index.html"
       }),
@@ -149,7 +140,7 @@ module.exports = (env) => {
 
   }
 
-  if(mode == "production"){
+  if(mode === "production"){ //生产
     options.plugins = options.plugins.concat([
       new webpack.optimize.UglifyJsPlugin({
         compress: {
@@ -165,9 +156,22 @@ module.exports = (env) => {
         __DEBUG__: false,
       }),
     ])
-  }else{
+  }else{ //开发
     options.plugins = options.plugins.concat([
       new webpack.HotModuleReplacementPlugin(),
+      new OpenBrowserPlugin({url: 'http://localhost:8080'})
+    ])
+    options.entry = options.entry.concat([
+      'react-hot-loader/patch',
+      // activate HMR for React
+
+      'webpack-dev-server/client?http://localhost:8080',
+      // bundle the client for webpack-dev-server
+      // and connect to the provided endpoint
+
+      'webpack/hot/only-dev-server',
+      // bundle the client for hot reloading
+      // only- means to only hot reload for successful updates
     ])
   }
   return options
