@@ -8,25 +8,26 @@ module.exports = (env) => {
   const mode = (env && env.mode) || "dev"
 
   let options = {
-    devtool: mode == "production" ? undefined : "source-map",
-    context: path.resolve('src'),
+    devtool: mode == "production" ? undefined : "source-map",  //此选项控制是否和如何生成源映射。
+    context: path.resolve('src'),       //基本目录，一个绝对路径，用于从配置中解析入口点和装载程序。
     entry: [
+      'react-hot-loader/patch',
       "./main.js"
     ],
     //string | [string] | object { <key>: string | [string] } | (function: () => string | [string] | object { <key>: string | [string] })
     output: {
       path: path.resolve('build'),
       filename: mode === "production" ? 'bundle.[chunkhash:4].js' : "bundle.js",
-      publicPath: "" //为应用程序中的所有资源指定基本路径, 确保 publicPath 总是以斜杠(/)开头和结尾。
+      publicPath: "" //为应用程序中的所有资源指定基本路径。
       // 你的包现在可以通过 http://localhost:8080/build/bundle.js 访问。
     },
-    devServer: {
-      contentBase: path.resolve("src"),   //告诉服务器从哪里提供内容。只有当您要提供静态文件时，才需要这样做
+    devServer: { //Webpack提供一个本地开发服务器，这个本地服务器基于node.js构建
+      contentBase: path.resolve("src"),   //为根文件夹提供本地服务器，如果想为另外一个目录下的文件提供本地服务器，应该在这里设置其所在目录,
       hot: true,
       // clientLogLevel: "none" //控制台将始终显示捆绑包错误和警告。此选项仅影响其前的消息
     },
 
-    module: {
+    module: { //这些选项决定了项目中不同类型的模块将被如何处理。
       rules: [
         {
           test: /\.js$/,
@@ -64,36 +65,6 @@ module.exports = (env) => {
                 }
               },
               "less-loader",
-              "postcss-loader",
-            ],
-        },
-        {
-          test: /\.css$/,
-          use: mode == "production"
-          ? ExtractTextPlugin.extract({
-            fallback: 'style-loader',
-            use: [
-              {
-                loader:"css-loader",
-                options:{
-                  modules: true,
-                  localIdentName: "[name]-[local]-[hash:base64:3]",
-                  minimize: true,
-                  sourceMap: false
-                }
-              },
-              "postcss-loader",
-            ],
-          })
-          : [
-              "style-loader",
-              {
-                loader: "css-loader",
-                options: {
-                  modules: true,
-                  localIdentName: "[name]-[local]-[hash:base64:3]"
-                }
-              },
               "postcss-loader",
             ],
         },
@@ -162,7 +133,7 @@ module.exports = (env) => {
       new OpenBrowserPlugin({url: 'http://localhost:8080'})
     ])
     options.entry = options.entry.concat([
-      'react-hot-loader/patch',
+      // 'react-hot-loader/patch',
       // activate HMR for React
 
       'webpack-dev-server/client?http://localhost:8080',
