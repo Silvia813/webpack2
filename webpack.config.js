@@ -107,7 +107,17 @@ module.exports = (env) => {
       new HtmlWebpackPlugin({
         template: "index.html"
       }),
-    ]
+    ],
+
+    resolve: {
+      modules: [
+        path.resolve('src'),
+        path.resolve("src/app"),
+        path.resolve('src/shared'),
+        path.resolve('.'),
+        "node_modules",
+      ]
+    }
 
   }
 

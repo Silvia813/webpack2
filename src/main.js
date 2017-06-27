@@ -2,13 +2,18 @@ import React from "react"
 import ReactDOM from "react-dom"
 import { AppContainer } from "react-hot-loader"
 
-import Greeter from "./Greeter"
+import {Provider} from "react-redux"
+import store from "store"
+
+import Greeter from "Greeter"
 import "./index.less"
 
 const render = (Component) => {
   ReactDOM.render(
     <AppContainer>
-      <Greeter />
+      <Provider store={store}>
+        <Component />
+      </Provider>
     </AppContainer>,
     document.getElementById("root")
   )
